@@ -1,0 +1,8 @@
+[package]
+name = "Pluma"
+version = "0.1.0"
+authors = ["EgoAvara <egoavara@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+nom="5.1.1"
