@@ -11,8 +11,9 @@ mod function_type;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum Type {
+    Void,
     Primitive(PrimitiveType),
-    Function(Box<FunctionType>),
+    Function(Box<FunctionType<NoIdentParam>>),
 }
 
 impl TokenConsumer for Type {

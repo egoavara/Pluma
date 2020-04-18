@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::iter::Peekable;
 use std::vec::IntoIter;
 
-use crate::pluma::token::Token;
+use crate::pluma::token::{Control, Keyword, Token};
 
 pub trait TokenConsumer: Sized {
     type ERR;
@@ -52,9 +52,36 @@ impl TokenStream {
         }
         tmp
     }
-    pub fn pick<TC : TokenConsumer>(&mut self) -> Result<TC, TC::ERR>{ TC::consume(self) }
-    pub fn opt_pick<TC : TokenConsumer>(&mut self) -> Option<TC>{
+    pub fn pick<TC: TokenConsumer>(&mut self) -> Result<TC, TC::ERR> { TC::consume(self) }
+    pub fn opt_pick<TC: TokenConsumer>(&mut self) -> Option<TC> {
         TC::consume(self).ok()
+    }
+
+    pub fn keyword<ERR, F: FnOnce() -> ERR>(&mut self, key: &Keyword, f: F) -> Result<(), ERR> {
+        self.check(|otk| {
+            if let Some(Token::Keyword(test)) = otk {
+                if test == key {
+                    Ok(())
+                } else {
+                    Err(f())
+                }
+            } else {
+                Err(f())
+            }
+        })
+    }
+    pub fn control<ERR, F: FnOnce() -> ERR>(&mut self, ctl: &Control, f: F) -> Result<(), ERR> {
+        self.check(|otk| {
+            if let Some(Token::Control(test)) = otk {
+                if test == ctl {
+                    Ok(())
+                } else {
+                    Err(f())
+                }
+            } else {
+                Err(f())
+            }
+        })
     }
 
     pub fn direct(&mut self) -> (&mut Vec<Token>, usize) {

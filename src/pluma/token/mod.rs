@@ -34,15 +34,6 @@ pub enum Token {
     Bytes(Vec<u8>),
     Numeric(String),
     Literal(String),
-
-    GroupStart,
-    GroupEnd,
-    BlockStart,
-    BlockEnd,
-    ArrayStart,
-    ArrayEnd,
-    GenericStart,
-    GenericEnd,
 }
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
@@ -56,7 +47,7 @@ pub enum Keyword {
     Or,
     As,
 
-    Func,
+    Fn,
     Struct,
     Interface,
 
@@ -93,6 +84,15 @@ pub enum Control {
     Slash,
     Or,
     Meta,
+    //
+    GroupStart,
+    GroupEnd,
+    BlockStart,
+    BlockEnd,
+    ArrayStart,
+    ArrayEnd,
+    GenericStart,
+    GenericEnd,
 }
 
 pub trait NomMatcher: Sized {
@@ -138,7 +138,7 @@ impl NomMatcher for Keyword {
                 map(tag("and"), |_| Keyword::And),
                 map(tag("as"), |_| Keyword::As),
                 map(tag("or"), |_| Keyword::Or),
-                map(tag("func"), |_| Keyword::Func),
+                map(tag("fn"), |_| Keyword::Fn),
                 map(tag("struct"), |_| Keyword::Struct),
                 map(tag("interface"), |_| Keyword::Interface),
                 map(tag("import"), |_| Keyword::Import),
@@ -175,6 +175,16 @@ impl NomMatcher for Control {
             map(tag("/"), |_| Control::Slash),
             map(tag("|"), |_| Control::Or),
             map(tag(":"), |_| Control::Meta),
+            alt((
+                map(tag("("), |_| Control::GroupStart),
+                map(tag(")"), |_| Control::GroupEnd),
+                map(tag("{"), |_| Control::BlockStart),
+                map(tag("}"), |_| Control::BlockEnd),
+                map(tag("["), |_| Control::ArrayStart),
+                map(tag("]"), |_| Control::ArrayEnd),
+                map(tag("<"), |_| Control::GenericStart),
+                map(tag(">"), |_| Control::GenericEnd),
+            ))
         ))(src)
     }
 }
@@ -255,14 +265,6 @@ impl NomMatcher for Token {
             map(Identifier::nom, |id| Token::Identifier(id)),
             map(numeric, |x| Token::Numeric(x)),
             map(literal, |x| Token::Literal(x)),
-            map(tag("("), |_| Token::GroupStart),
-            map(tag(")"), |_| Token::GroupEnd),
-            map(tag("{"), |_| Token::BlockStart),
-            map(tag("}"), |_| Token::BlockEnd),
-            map(tag("["), |_| Token::ArrayStart),
-            map(tag("]"), |_| Token::ArrayEnd),
-            map(tag("<"), |_| Token::GenericStart),
-            map(tag(">"), |_| Token::GenericEnd),
         ))(src)
     }
 }
